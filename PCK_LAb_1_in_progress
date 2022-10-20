@@ -1,0 +1,131 @@
+import pandas as pd
+import os
+from openpyxl import load_workbook
+import numpy as np
+import xlwings as xw
+
+# Короче название ексель файла откуда мы берём масив
+file = 'data.xlsx'
+
+# Более удобное отображения масива
+def mprint(x):
+    print('-'*50)
+    for i in range(len(x)):
+        print(x[i], end='\n')
+    print('-'*50)
+
+# Поиск макс елемента для алгоритма (которого нет)
+def find_max(x):
+    max = 0
+    for i in range(len(x)):
+        for j in range(len(x[i])):
+            if max < x[i][j]:
+                max = x[i][j]
+    return max
+
+# Если видите такой знак (**) значит дальше идёт краткое описание как я всё вот это делал, если у вас возникнет по поводу какого-то 
+# участка кода вопрос: "А нафига это нужно?", то я могу потом объяснить, просто писать дого, даю общее понимание
+
+# Короче **считываем инфу с 1 листа екселя и херачим его в масив
+df = pd.read_excel(file, sheet_name='Аркуш1')
+df = np.array(df)
+new_df= df.tolist()
+
+# **Удаляем лишние NAN
+for i in range(len(new_df)):
+    for j in range(len(new_df[i])):
+        if pd.isna(new_df[i][j]):
+            for _ in range(len(new_df[i])-j):
+                new_df[i].pop(j)
+            break
+
+# **Удаляем лишние масивы
+for i in range(len(new_df)):
+    if not new_df[i]:
+        for _ in range(len(new_df)-i):
+            new_df.pop(i)
+        break
+
+# Готов масив даных
+print("Получаем наши очищенные данные:")
+mprint(new_df)
+
+# Создаем переменную уникальных чисел и пихаем первую строку полученого масива
+unique = new_df[0].copy()
+
+# Проходимся по всему масиву и проверяем есть ли елемент в масиве уникальных, если нету, то добавляем его
+for i in range(len(new_df)-1):
+    for j in range(len(new_df[i+1])):
+        if new_df[i+1][j] not in unique:
+            unique.append(new_df[i+1][j])
+
+# Получаем последовательность уникальных елементов
+print("\nПоследовательность уникальных елементов:\n", unique, end='\n')
+
+# И коеф К (количество уникальных елементов)
+K0 = len(unique)
+print('\nKоеф К: ', K0, end='\n')
+
+# Создаём **датафрейм тип как нам показывали на практике
+mx_suizh = pd.DataFrame(np.zeros((len(new_df), K0),dtype = np.int8),range(1,len(new_df)+1), unique)
+print('\nПросто нулевой: ')
+print(mx_suizh, end='\n')
+
+# Ну и проверяем сколько елементов совпадает (показывали на практике)
+for i in range(len(new_df)):
+    for j in range(len(unique)):
+        if unique[j] in new_df[i]:
+            mx_suizh[unique[j]][i+1] = 1
+
+print('\nПосле проверки на совпадения: ')
+print(mx_suizh)
+
+
+# Ну и дальше идёт алгоритм получения нижней треугольной матрицы
+uuu = 0
+main_m = []
+for i in range(len(new_df)):
+    main_m.append([])
+for i in range(len(unique)-1):
+    for j in range(len(new_df)-1-i):
+        uuu = 0
+        for h in range(len(unique)):
+            uuu += np.abs(mx_suizh[unique[h]][i+1]-mx_suizh[unique[h]][j+2+i])
+        main_m[j+1+i].append(K0-uuu)
+
+print('\nТреуголная матрица (и какое-то предупреждение которое я не читал):')
+mprint(np.array(main_m))
+
+# Ну и тут меня поимели
+print('\n\n\n\n\nДальше идёт неработающая херня\n\n\n\n')
+
+
+main_m.pop(11)
+mprint(np.array(main_m))
+
+max_ind = []
+finding_max = find_max(main_m)
+for i in range(len(main_m)):
+    try:
+        print(i)
+        m_ind = main_m[i].index(finding_max)
+        max_ind.append([m_ind, main_m[m_ind].index(find_max(main_m))])
+        print('IND: ',m_ind, main_m[m_ind].index(find_max(main_m)))
+    except:
+        pass
+
+print(find_max(main_m))
+print(main_m[12])
+print(len(main_m))
+#print(main_m[max_ind[0][0]][max_ind[0][1]])
+ii=12
+print(i)
+m_ind = main_m[ii].index(12)
+print('max',find_max(main_m), 'i: ',i,'m_ind: ',main_m[m_ind])
+#max_ind.append([m_ind, main_m[m_ind].index(12)])
+#print('IND: ',max_ind)
+
+
+
+
+
