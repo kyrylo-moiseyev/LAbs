@@ -17,11 +17,15 @@ def mprint(x):
 # Поиск макс елемента для алгоритма (которого нет)
 def find_max(x):
     max = 0
+    max_i = 0
+    max_j = 0
     for i in range(len(x)):
         for j in range(len(x[i])):
             if max < x[i][j]:
                 max = x[i][j]
-    return max
+                max_i = i
+                max_j = j
+    return max_i, max_j, max
 
 # Если видите такой знак (**) значит дальше идёт краткое описание как я всё вот это делал, если у вас возникнет по поводу какого-то 
 # участка кода вопрос: "А нафига это нужно?", то я могу потом объяснить, просто писать дого, даю общее понимание
@@ -86,44 +90,103 @@ uuu = 0
 main_m = []
 for i in range(len(new_df)):
     main_m.append([])
-for i in range(len(unique)-1):
+for i in range(len(new_df)-1):
     for j in range(len(new_df)-1-i):
         uuu = 0
         for h in range(len(unique)):
             uuu += np.abs(mx_suizh[unique[h]][i+1]-mx_suizh[unique[h]][j+2+i])
         main_m[j+1+i].append(K0-uuu)
 
-print('\nТреуголная матрица (и какое-то предупреждение которое я не читал):')
-mprint(np.array(main_m))
+print('\nТреуголная матрица:')
 
-# Ну и тут меня поимели
-print('\n\n\n\n\nДальше идёт неработающая херня\n\n\n\n')
+class_dict = {}
 
+mprint(main_m)
 
-main_m.pop(11)
-mprint(np.array(main_m))
-
+final_group = []
+main_group=[]
 max_ind = []
-finding_max = find_max(main_m)
-for i in range(len(main_m)):
-    try:
-        print(i)
-        m_ind = main_m[i].index(finding_max)
-        max_ind.append([m_ind, main_m[m_ind].index(find_max(main_m))])
-        print('IND: ',m_ind, main_m[m_ind].index(find_max(main_m)))
-    except:
-        pass
 
-print(find_max(main_m))
-print(main_m[12])
-print(len(main_m))
-#print(main_m[max_ind[0][0]][max_ind[0][1]])
-ii=12
-print(i)
-m_ind = main_m[ii].index(12)
-print('max',find_max(main_m), 'i: ',i,'m_ind: ',main_m[m_ind])
-#max_ind.append([m_ind, main_m[m_ind].index(12)])
-#print('IND: ',max_ind)
+# Дальше идёт большой алгоритм вычисления груп. Можете убрвть # возле принтов, так будет проще разобраться
+while(find_max(main_m)[2]>0):
+    max_i, max_j, finding_max = find_max(main_m)
+    g = []
+    for i in range(len(main_m)):
+        try:
+           m_ind = main_m[i].index(finding_max)
+           max_ind.append([m_ind, main_m[m_ind].index(find_max(main_m))])
+        except:
+           pass
+    g.append(max_i)
+    g.append(max_j)
+    while 1:
+        if not g:
+            break
+        for i in range(len(main_m[g[0]])): # Удаление строки
+            if main_m[g[0]][i] == finding_max:
+                if i not in g:
+                    g.append(i)
+                    
+                if i not in main_group:
+                    main_group.append(i)
+                    if g[0] not in main_group:
+                        main_group.append(g[0])
+                    #print(main_group)
+            main_m[g[0]][i] = -1
+        
+        #mprint(np.array(main_m))
+
+        for i in range(len(main_m)-1-g[0]): # Удаление столбца
+            if main_m[i+1+g[0]][g[0]] == finding_max:
+                if i+1+g[0] not in g:
+                    g.append(i+1+g[0])
+                if i+1+g[0] not in main_group:
+                    main_group.append(i+1+g[0])
+                    #print(main_group)
+            main_m[i+1+g[0]][g[0]] = -1
+        g.pop(0)
+        #mprint(np.array(main_m))
+    final_group.append(main_group)
+    main_group=[]
+
+
+for i in range(len(final_group)):
+    for j in range(len(final_group[i])):
+        final_group[i][j] +=1
+
+check = []
+extra_g = []
+
+for i in range(len(final_group)):
+    for j in range(len(final_group[i])):
+        check.append(final_group[i][j])
+
+for i in range(len(new_df)):
+    if i+1 not in check:
+        extra_g.append(i+1)
+
+if not extra_g:
+    pass
+else:
+    final_group.append(extra_g)
+
+print("\nОтримані групи:")
+
+for i in range(len(final_group)):
+    print("Група ", i+1, ': ',final_group[i])
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
